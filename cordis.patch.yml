@@ -1,0 +1,6 @@
+- insert:
+    - id: dsh-commit
+      name: dsh-commit
+      config:
+        provider: deepseek-official
+        model: deepseek-flash
