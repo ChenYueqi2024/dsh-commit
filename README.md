@@ -1,5 +1,7 @@
 # dsh-commit
 
+> github.com/ChenYueqi2024/dsh-commit · 旗舰插件：github.com/ChenYueqi2024/dsh-memory
+
 [DeepSeek Harness（dsh）](https://github.com/deepseek-ai/deepseek-harness)的原生工具插件：读取 git 暂存区 diff，通过一次辅助 LLM 调用生成**中文约定式提交信息**（Conventional Commits）。
 
 设计原则：**插件只生成，不提交**。`git commit` 由模型用自己的 shell 工具执行，完整保留 dsh 的权限审批管线——工具不做任何绕过权限的事。
