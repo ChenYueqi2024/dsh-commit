@@ -1,12 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { cleanMessage, truncateDiff, gitErrorHint } from '../src/index.ts'
-import { execFile } from 'node:child_process'
-import { promisify } from 'node:util'
-import { mkdtempSync, writeFileSync } from 'node:fs'
-import { tmpdir } from 'node:os'
-import { join } from 'node:path'
-
-const run = promisify(execFile)
+import { cleanMessage, truncateDiff, gitErrorHint } from '../src/messages.ts'
 
 describe('cleanMessage', () => {
   it('strips markdown code fences', () => {

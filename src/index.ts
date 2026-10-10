@@ -11,27 +11,11 @@ import z from '@deepseek-ai/schemastery'
 import { createUserMessage, BlockAssembler } from '@deepseek-ai/dsh-llm'
 import type { GenerateOptions } from '@deepseek-ai/dsh-llm'
 import { defineTool } from '@deepseek-ai/dsh-tools'
+import { cleanMessage, gitErrorHint, truncateDiff } from './messages.ts'
 import { execFile } from 'node:child_process'
 import { promisify } from 'node:util'
 
 const run = promisify(execFile)
-
-/** Extract the conventional-commit message from model output (strip fences/prose). */
-export function cleanMessage(text: string): string {
-  return text.replace(/^```[a-z]*\n?|```$/g, '').trim()
-}
-
-/** Map a raw git failure to an actionable Chinese hint. */
-export function gitErrorHint(raw: string, cwd: string): string {
-  if (raw.includes('not a git repository')) return `当前目录 ${cwd} 不是 git 仓库：先 git init / cd 到仓库目录`
-  if (raw.includes('does not have any commits yet') || raw.includes('ambiguous argument')) return '仓库还没有任何提交且暂存区读取失败：先 git add 文件'
-  return `读取暂存区失败：${raw}`
-}
-
-/** Cap a large staged diff for the model call. */
-export function truncateDiff(diff: string, maxChars: number): string {
-  return diff.length > maxChars ? diff.slice(0, maxChars) + '\n...(diff 已截断)' : diff
-}
 
 export const name = 'dsh-commit'
 export const inject = ['tools', 'llm'] as const
