@@ -1,6 +1,6 @@
 {
   "name": "dsh-commit",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "dsh-commit: generate conventional Chinese commit messages from staged git changes, as a native DeepSeek Harness tool plugin.",
   "type": "module",
   "main": "dist/index.js",

@@ -79,29 +79,29 @@ export function apply(ctx: Context, config: Config): void {
     },
     async execute(_args, exec) {
       const cwd = exec.agent?.session?.header?.cwd ?? process.cwd()
+      const sessionId = exec.agent?.session?.id
       let diff: string
       let stagedFiles: number
       try {
         diff = (await run('git', ['diff', '--cached'], { cwd, maxBuffer: 32 * 1024 * 1024 })).stdout
-        const stat = (await run('git', ['diff', '--cached', '--stat'], { cwd, maxBuffer: 1024 * 1024 })).stdout
-        stagedFiles = stat.split('\n').filter(line => line.includes('|')).length
+        // 用 name-only 计数，不用 --stat 行特征启发式：重命名/二进制文件的
+        // stat 行格式不同，"含 |"的判定会漏数
+        const names = (await run('git', ['diff', '--cached', '--name-only'], { cwd, maxBuffer: 1024 * 1024 })).stdout
+        stagedFiles = names.split('\n').filter(line => line.trim().length > 0).length
       } catch (error) {
-        throw new Error(`读取暂存区失败（是否为 git 仓库、是否有暂存内容？）：${error instanceof Error ? error.message : String(error)}`)
+        throw new Error(gitErrorHint(error instanceof Error ? error.message : String(error), cwd))
       }
       if (diff.trim().length === 0) {
         throw new Error('暂存区为空：先 `git add` 再调用本工具')
       }
-      const truncated = diff.length > config.maxDiffChars
-        ? diff.slice(0, config.maxDiffChars) + '\n...(diff 已截断)'
-        : diff
-      const message = await generate(ctx, config, cwd, truncated)
+      const message = await generate(ctx, config, cwd, truncateDiff(diff, config.maxDiffChars), sessionId)
       return { stagedFiles, message }
     },
     presentCall: () => ({ card: 'generic', title: '生成 commit message', kind: 'other', rawInput: {} }),
   }))
 }
 
-async function generate(ctx: Context, config: Config, cwd: string, diff: string): Promise<string> {
+async function generate(ctx: Context, config: Config, cwd: string, diff: string, sessionId?: string): Promise<string> {
   const controller = new AbortController()
   const timer = setTimeout(() => controller.abort(), config.timeoutMs)
   try {
@@ -114,7 +114,8 @@ async function generate(ctx: Context, config: Config, cwd: string, diff: string)
       })],
       system: SYSTEM,
       maxTokens: 512,
-      sessionId: undefined,
+      // 辅助调用同样带上会话归属：telemetry 与日志才能追溯到发起会话
+      sessionId,
       purpose: 'dsh-commit-generate',
       signal: controller.signal,
     })
@@ -126,7 +127,7 @@ async function generate(ctx: Context, config: Config, cwd: string, diff: string)
       .join(' ')
       .trim()
     if (text.length === 0) throw new Error('模型未返回内容')
-    return text.replace(/^```[a-z]*\n?|```$/g, '').trim()
+    return cleanMessage(text)
   } finally {
     clearTimeout(timer)
   }

@@ -1,4 +1,4 @@
-name: build
+name: ci
 on:
   push:
     branches: [main]
@@ -13,4 +13,8 @@ jobs:
         with:
           node-version: 22
       - run: npm install
+      # 单测门禁：纯函数（cleanMessage/truncateDiff/gitErrorHint）同时被
+      # 生产路径调用，测试必须拦住回归——此前只 build 不 test，7 个用例
+      # 从未在 CI 里跑过
+      - run: npm test
       - run: npm run build

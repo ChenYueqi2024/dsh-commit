@@ -21,7 +21,7 @@ feat(calc): 新增 add 函数与 node_modules 忽略规则
 ## 快速开始
 
 ```bash
-npm install && npm run build
+npm install && npm test && npm run build   # 7 个单元测试 + 构建
 # 复制进 profile 的 node_modules，并在 cordis.patch.yml 插入：
 # - insert:
 #     - id: dsh-commit
