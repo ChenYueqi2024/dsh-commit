@@ -12,9 +12,17 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-      - run: npm install
+      - run: npm ci
       # 单测门禁：纯函数（cleanMessage/truncateDiff/gitErrorHint）同时被
       # 生产路径调用，测试必须拦住回归——此前只 build 不 test，7 个用例
       # 从未在 CI 里跑过
       - run: npm test
       - run: npm run build
+      - name: Verify Git installation builds the entry point
+        shell: bash
+        run: |
+          mkdir -p "$RUNNER_TEMP/plugin-install"
+          cd "$RUNNER_TEMP/plugin-install"
+          printf '{"private":true}\n' > package.json
+          npm install --no-audit --no-fund "git+file://$GITHUB_WORKSPACE"
+          node -e "const fs=require('node:fs'); for (const f of ['dist/index.js','cordis.patch.yml']) if (!fs.existsSync('node_modules/dsh-commit/'+f)) throw new Error('Missing '+f)"

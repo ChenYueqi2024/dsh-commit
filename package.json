@@ -1,17 +1,31 @@
 {
   "name": "dsh-commit",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "description": "dsh-commit: generate conventional Chinese commit messages from staged git changes, as a native DeepSeek Harness tool plugin.",
   "type": "module",
   "main": "dist/index.js",
+  "files": ["dist", "cordis.patch.yml", "README.md", "LICENSE"],
   "scripts": {
     "build": "node build.mjs",
+    "prepare": "npm run build",
     "test": "vitest run"
   },
   "dsh": {
     "bundle": {
       "patch": "./cordis.patch.yml"
     }
+  },
+  "peerDependencies": {
+    "@deepseek-ai/cordis": "~4.0.4",
+    "@deepseek-ai/schemastery": "~3.18.4",
+    "@deepseek-ai/dsh-llm": "0.2.0-rc.2",
+    "@deepseek-ai/dsh-tools": "0.2.0-rc.2"
+  },
+  "peerDependenciesMeta": {
+    "@deepseek-ai/cordis": { "optional": true },
+    "@deepseek-ai/schemastery": { "optional": true },
+    "@deepseek-ai/dsh-llm": { "optional": true },
+    "@deepseek-ai/dsh-tools": { "optional": true }
   },
   "devDependencies": {
     "esbuild": "^0.27.0",
